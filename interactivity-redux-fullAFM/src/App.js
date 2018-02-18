@@ -1,10 +1,10 @@
 // Copyright (C) 2007-2017, GoodData(R) Corporation. All rights reserved.
-import React, { Component } from 'react';
+import React from 'react';
 import '@gooddata/react-components/styles/css/main.css';
 
-import { Execute } from '@gooddata/react-components'
+import { AttributeElements } from '@gooddata/react-components';
 import afmConnect from './afmConnect'
-import { Kpi, ColumnChart } from './components/smart'
+import { ColumnChart } from './components/afmConnected'
 import './App.css';
 
 import { AVAILABLE_MEASURES } from './measures'
@@ -47,26 +47,30 @@ const MeasureDropdown = afmConnect(PureMeasureDropdown)
  * The updateAttributeFilter is analogous to the setMeasures
  * action creator described above.
  */
-const PureAttributeElementsDropdown = ({ attributeLabel, filterGroup, updateAttributeFilter }) => {
-  const afm = { attributes: [ { id: attributeLabel, type: "attribute" } ]}
+const AttributeElementsDropdown = ({ attributeLabel, filterGroup, updateAttributeFilter }) => {
   return (
-    <Execute {...projectId} afm={afm} onLoadingChanged={e=>{}} onError={e=>{}}>{
-      (output) => (
-        <select onChange={e => updateAttributeFilter(filterGroup, attributeLabel, e.target.value)}>
-          <option key="-1" value="">All Regions</option>
-          {
-            output.result.rawData.map(row => (
-              <option key={row[0].id} value={row[0].id}>
-                {row[0].name || 'Unknown Region'}
-              </option>
-            ))
-          }
-        </select>
-    )}</Execute>
+    <AttributeElements {...projectId} identifier={attributeLabel} options={{ limit: 20 }}>
+        {({ validElements, isLoading }) => {
+            if (isLoading) {
+                return <div>Loading</div>;
+            }
+
+            const options = validElements.items.map((validElement) => (
+                <option key={validElement.element.uri} value={validElement.element.uri}>
+                    {validElement.element.title || 'Unknown Region'}
+                </option>
+            ));
+
+            return (
+                <select onChange={e => updateAttributeFilter(filterGroup, attributeLabel, e.target.value)}>
+                    <option key="-1" value="">All Regions</option>
+                    {options}
+                </select>
+            );
+        }}
+    </AttributeElements>
   )
 }
-
-const AttributeElementsDropdown = afmConnect(PureAttributeElementsDropdown)
 
 const measureTransformation = AVAILABLE_MEASURES.map(measureName =>
   ({ id: C.metric(measureName), title: measureName })
@@ -84,12 +88,12 @@ const App = () => (
     <MeasureDropdown measureGroup="mg1" available={AVAILABLE_MEASURES} />
     <span> AccountRegion:</span>
     <AttributeElementsDropdown attributeLabel={C.attributeDisplayForm("Account Region")} filterGroup="fg1" />
-    <div>
+    {/* <div>
       <Kpi measureGroup="mg1" filterGroup="fg1"
         measure={C.metric(AVAILABLE_MEASURES[0])}
         format="#,##0"
         { ...projectId } />
-    </div>
+    </div> */}
     <div style={{height: 400, width: 600}}>
       <ColumnChart measureGroup="mg1" filterGroup="fg1"
         { ...projectId }

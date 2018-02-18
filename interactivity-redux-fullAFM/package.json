@@ -14,7 +14,7 @@
     }
   },
   "dependencies": {
-    "@gooddata/react-components": "^3.0.1",
+    "@gooddata/react-components": "4.0.0-vaclavbohac-unification-poc-v4-2018-02-18T22-04-08-204Z",
     "prop-types": "^15.6.0",
     "react": "15.6.2",
     "react-dom": "15.6.2",
